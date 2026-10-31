@@ -1,0 +1,23 @@
+# R and RStudio local files
+.Rhistory
+.RData
+.RDataTmp
+.Rproj.user/
+
+# Private keys and credentials
+*.pem
+*.key
+.env
+.env.*
+
+# Local datasets and alternative scripts
+data/
+Extra appr.R
+AGENTS.md
+user_data.sh
+
+# Temporary files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
