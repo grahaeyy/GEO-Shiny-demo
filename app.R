@@ -223,12 +223,45 @@ ui <- page_navbar(
 # SERVER
 ############################################################
 
+# Check whether all expected results and plots are available
+outputs_exist <- function() {
+  required_files <- c(
+    file.path("results", c(
+      "GSE63514_all_results.csv",
+      "GSE63514_significant_genes.csv",
+      "GSE63514_upregulated.csv",
+      "GSE63514_downregulated.csv"
+    )),
+    file.path("figures", c(
+      "PCA.png",
+      "boxplot_before.png",
+      "boxplot_after.png",
+      "density_before.png",
+      "heatmap.png",
+      "volcano_plot.png"
+    ))
+  )
+  
+  all(file.exists(required_files)) &&
+    all(file.info(required_files)$size > 0)
+}
+
 server <- function(input, output, session) {
   
   # Tracks whether a pipeline run has completed successfully,
   # and stores the accession it ran for. Nothing tries to load
   # plots/tables until this is populated.
-  pipeline_result <- reactiveVal(NULL)
+  pipeline_result <- reactiveVal(
+    if (outputs_exist()) {
+      list(
+        success = TRUE,
+        accession = "GSE63514",
+        error = NULL
+      )
+    } else {
+      NULL
+    }
+  )
   
   observeEvent(input$run, {
     
@@ -248,7 +281,21 @@ server <- function(input, output, session) {
         
         result <- tryCatch({
           
-          source("geo_pipeline.R")
+          if (identical(accession, "GSE63514") && outputs_exist()) {
+            
+            showNotification(
+              "Using existing results. No analysis rerun needed.",
+              type = "message"
+            )
+            
+          } else if (identical(accession, "GSE63514")) {
+            
+            source("geo_pipeline.R")
+            
+          } else {
+            
+            stop("This app currently supports GSE63514 only.")
+          }
           
           list(
             success = TRUE,
@@ -256,7 +303,7 @@ server <- function(input, output, session) {
             error = NULL
           )
           
-        }, error = function(e){
+        }, error = function(e) {
           
           list(
             success = FALSE,
